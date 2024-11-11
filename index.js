@@ -9,8 +9,6 @@ const {
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent // 新增這個
     ]
 });
 const cron = require('node-cron');
