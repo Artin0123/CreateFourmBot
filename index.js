@@ -55,6 +55,27 @@ async function deployCommands() {
     }
 }
 
+// 提取創建貼文的邏輯成為獨立函數
+async function createDailyPost(channel) {
+    const today = new Date();
+    const dateString = today.toLocaleDateString('zh-TW', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    });
+
+    const thread = await channel.threads.create({
+        name: `${dateString}`,
+        message: {
+            content: '歡迎來到今日貼文！'
+        },
+        autoArchiveDuration: 1440,
+        reason: '每日論壇貼文'
+    });
+
+    return thread;
+}
+
 // 處理斜線指令
 client.on('interactionCreate', async interaction => {
     if (!interaction.isCommand()) return;
@@ -64,23 +85,7 @@ client.on('interactionCreate', async interaction => {
 
         try {
             const channel = await client.channels.fetch(process.env.CHANNEL_ID);
-
-            const today = new Date();
-            const dateString = today.toLocaleDateString('zh-TW', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-            });
-
-            const thread = await channel.threads.create({
-                name: `${dateString} 今日貼文`,
-                message: {
-                    content: '歡迎來到今日貼文！'
-                },
-                autoArchiveDuration: 1440,
-                reason: '每日論壇貼文'
-            });
-
+            const thread = await createDailyPost(channel);
             await interaction.editReply(`✅ 成功創建今日貼文：${thread.url}`);
         } catch (error) {
             console.error('建立貼文時發生錯誤:', error);
@@ -92,6 +97,19 @@ client.on('interactionCreate', async interaction => {
 client.once('ready', () => {
     console.log(`機器人已登入: ${client.user.tag}`);
     deployCommands();
+
+    // 設定每天 0:01 執行的排程任務
+    cron.schedule('1 0 * * *', async () => {
+        try {
+            const channel = await client.channels.fetch(process.env.CHANNEL_ID);
+            const thread = await createDailyPost(channel);
+            console.log(`自動創建今日貼文成功：${thread.url}`);
+        } catch (error) {
+            console.error('自動創建貼文時發生錯誤:', error);
+        }
+    }, {
+        timezone: "Asia/Taipei"  // 設定時區為台北
+    });
 });
 
 // 啟動機器人
