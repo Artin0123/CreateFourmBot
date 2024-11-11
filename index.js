@@ -1,5 +1,4 @@
-// 步驟 1: 檢查 channel 是否正確抓取且為 TextChannel
-const { ChannelType } = require('discord.js');
+const { Client, GatewayIntentBits, Permissions, REST, Routes, ApplicationCommandType } = require('discord.js');
 const cron = require('node-cron');
 const express = require('express');
 require('dotenv').config();
