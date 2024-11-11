@@ -4,7 +4,8 @@ const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.GuildMessageThreads
+        GatewayIntentBits.GuildMessageThreads,
+        GatewayIntentBits.MessageContent
     ]
 });
 const cron = require('node-cron');
