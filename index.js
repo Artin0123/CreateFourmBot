@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, Permissions } = require('discord.js');
+const { Client, GatewayIntentBits, Permissions, REST, Routes, ApplicationCommandType } = require('discord.js');
 const cron = require('node-cron');
 const express = require('express');
 require('dotenv').config();
@@ -25,41 +25,100 @@ const client = new Client({
     ]
 });
 
+// 定義斜線指令
+const commands = [
+    {
+        name: 'create',
+        description: '創建一個今日討論串',
+        type: ApplicationCommandType.ChatInput
+    }
+];
+
+// 註冊斜線指令的函數
+async function deployCommands() {
+    try {
+        const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
+        console.log('Started refreshing application (/) commands.');
+
+        await rest.put(
+            Routes.applicationCommands(process.env.CLIENT_ID),
+            { body: commands }
+        );
+
+        console.log('Successfully reloaded application (/) commands.');
+    } catch (error) {
+        console.error('Error deploying commands:', error);
+    }
+}
+
+// 創建討論串的函數
+async function createDailyThread(channel) {
+    try {
+        const today = new Date();
+        const dateString = today.toLocaleDateString('zh-TW', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        });
+
+        const thread = await channel.threads.create({
+            name: `${dateString} 日常討論`,
+            autoArchiveDuration: 1440,
+            reason: '每日討論串'
+        });
+
+        await thread.send('歡迎來到今天的討論串！');
+        return thread;
+    } catch (error) {
+        console.error('Error creating thread:', error);
+        throw error;
+    }
+}
+
 // 機器人啟動時的事件
-client.on('ready', () => {
+client.on('ready', async () => {
     console.log(`Logged in as ${client.user.tag}!`);
+
+    // 註冊斜線指令
+    await deployCommands();
 
     // 設定每天凌晨 00:00 執行
     cron.schedule('0 0 * * *', async () => {
         try {
-            // 取得目標頻道 (請替換成您的頻道 ID)
             const channel = await client.channels.fetch(process.env.CHANNEL_ID);
-
-            // 取得今天的日期
-            const today = new Date();
-            const dateString = today.toLocaleDateString('zh-TW', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-            });
-
-            // 創建新的討論串
-            const thread = await channel.threads.create({
-                name: `${dateString} 日常討論`,
-                autoArchiveDuration: 1440, // 24小時後自動封存
-                reason: '每日自動創建的討論串'
-            });
-
-            // 發送歡迎訊息
-            await thread.send('歡迎來到今天的討論串！');
-
-            console.log(`Successfully created thread for ${dateString}`);
+            await createDailyThread(channel);
+            console.log(`Successfully created daily thread`);
         } catch (error) {
-            console.error('Error creating daily thread:', error);
+            console.error('Error in cron job:', error);
         }
     }, {
-        timezone: "Asia/Taipei" // 設定時區為台北時間
+        timezone: "Asia/Taipei"
     });
+});
+
+// 處理斜線指令
+client.on('interactionCreate', async interaction => {
+    if (!interaction.isCommand()) return;
+
+    if (interaction.commandName === 'create') {
+        try {
+            await interaction.deferReply(); // 先回應 Discord，表示我們收到了指令
+
+            const channel = await client.channels.fetch(process.env.CHANNEL_ID);
+            const thread = await createDailyThread(channel);
+
+            await interaction.editReply({
+                content: `成功創建了討論串！\n${thread.url}`,
+                ephemeral: true // 只有執行指令的人看得到回應
+            });
+        } catch (error) {
+            console.error('Error handling create command:', error);
+            await interaction.editReply({
+                content: '創建討論串時發生錯誤，請稍後再試。',
+                ephemeral: true
+            });
+        }
+    }
 });
 
 // 錯誤處理
