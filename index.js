@@ -1,4 +1,5 @@
-const { Client, GatewayIntentBits, Permissions, REST, Routes, ApplicationCommandType } = require('discord.js');
+// 步驟 1: 檢查 channel 是否正確抓取且為 TextChannel
+const { ChannelType } = require('discord.js');
 const cron = require('node-cron');
 const express = require('express');
 require('dotenv').config();
@@ -17,11 +18,12 @@ app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
 
-// 創建 Discord 客戶端
+// 步驟 2: 增加更多意圖以支持線程
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.GuildMessageThreads
     ]
 });
 
@@ -54,6 +56,10 @@ async function deployCommands() {
 // 創建討論串的函數
 async function createDailyThread(channel) {
     try {
+        if (!channel || channel.type !== ChannelType.GuildText) {
+            throw new Error('指定的頻道不存在或不是文字頻道');
+        }
+
         const today = new Date();
         const dateString = today.toLocaleDateString('zh-TW', {
             year: 'numeric',
@@ -75,7 +81,7 @@ async function createDailyThread(channel) {
     }
 }
 
-// 機器人啟動時的事件
+// 步驟 4: 增加日誌以協助調試
 client.on('ready', async () => {
     console.log(`Logged in as ${client.user.tag}!`);
 
@@ -86,6 +92,8 @@ client.on('ready', async () => {
     cron.schedule('0 0 * * *', async () => {
         try {
             const channel = await client.channels.fetch(process.env.CHANNEL_ID);
+            console.log('Fetched channel:', channel);
+
             await createDailyThread(channel);
             console.log(`Successfully created daily thread`);
         } catch (error) {
