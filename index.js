@@ -1,5 +1,5 @@
 // 添加需要的 Discord.js 組件
-const { Client, GatewayIntentBits, ApplicationCommandType, Routes, REST } = require('discord.js');
+const { Client, GatewayIntentBits, Permissions, REST, Routes, ApplicationCommandType } = require('discord.js');
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
