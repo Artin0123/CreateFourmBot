@@ -1,6 +1,21 @@
 const { Client, GatewayIntentBits, Permissions } = require('discord.js');
 const cron = require('node-cron');
+const express = require('express');
 require('dotenv').config();
+
+// 創建 Express 應用
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// 簡單的健康檢查端點
+app.get('/', (req, res) => {
+    res.send('Discord Bot is running!');
+});
+
+// 啟動 HTTP 服務器
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
 
 // 創建 Discord 客戶端
 const client = new Client({
@@ -51,11 +66,6 @@ client.on('ready', () => {
 client.on('error', error => {
     console.error('Discord client error:', error);
 });
-
-// 環境配置
-// 在 .env 檔案中設定以下變數：
-// DISCORD_TOKEN=你的機器人Token
-// CHANNEL_ID=目標頻道ID
 
 // 啟動機器人
 client.login(process.env.DISCORD_TOKEN);
