@@ -104,6 +104,10 @@ client.once('ready', () => {
             const channel = await client.channels.fetch(process.env.CHANNEL_ID);
             const thread = await createDailyPost(channel);
             console.log(`自動創建今日貼文成功：${thread.url}`);
+
+            // 在每小時00分輸出當前的dateString和時間
+            const now = new Date();
+            console.log(`當前時間: ${now.toLocaleString('zh-TW')} - dateString: ${dateString}`);
         } catch (error) {
             console.error('自動創建貼文時發生錯誤:', error);
         }
