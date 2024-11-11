@@ -1,11 +1,16 @@
 // 添加需要的 Discord.js 組件
-const { Client, GatewayIntentBits, Permissions, REST, Routes, ApplicationCommandType } = require('discord.js');
+const {
+    Client,
+    GatewayIntentBits,
+    ApplicationCommandType,
+    Routes,
+    REST
+} = require('discord.js');
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.GuildMessageThreads,
-        GatewayIntentBits.MessageContent
+        GatewayIntentBits.MessageContent // 新增這個
     ]
 });
 const cron = require('node-cron');
