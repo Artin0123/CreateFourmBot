@@ -109,10 +109,10 @@ client.once('ready', () => {
     });
 
     // 顯示當前時間和日期
-    cron.schedule('59 0 * * *', () => {
+    cron.schedule('10 1 * * *', () => {
         const now = new Date();
-        const formattedTime = now.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        const formattedDate = now.toLocaleDateString('zh-TW');
+        const formattedTime = now.toLocaleTimeString('zh-TW', { timeZone: 'Asia/Taipei', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const formattedDate = now.toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei' });
         console.log(`目前時間: ${formattedTime}，日期: ${formattedDate}`);
     }, {
         timezone: "Asia/Taipei"  // 設定時區為台北
