@@ -58,11 +58,8 @@ async function deployCommands() {
 // 提取創建貼文的邏輯成為獨立函數
 async function createDailyPost(channel) {
     const today = new Date();
-    const dateString = today.toLocaleDateString('zh-TW', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-    });
+    const options = { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' };
+    const dateString = today.toLocaleDateString('zh-TW', options);
 
     const thread = await channel.threads.create({
         name: `${dateString}`,
@@ -112,7 +109,7 @@ client.once('ready', () => {
     });
 
     // 顯示當前時間和日期
-    cron.schedule('40 0 * * *', () => {
+    cron.schedule('59 0 * * *', () => {
         const now = new Date();
         const formattedTime = now.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         const formattedDate = now.toLocaleDateString('zh-TW');
