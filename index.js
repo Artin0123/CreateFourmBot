@@ -104,13 +104,19 @@ client.once('ready', () => {
             const channel = await client.channels.fetch(process.env.CHANNEL_ID);
             const thread = await createDailyPost(channel);
             console.log(`自動創建今日貼文成功：${thread.url}`);
-
-            // 在每小時00分輸出當前的dateString和時間
-            const now = new Date();
-            console.log(`當前時間: ${now.toLocaleString('zh-TW')} - dateString: ${dateString}`);
         } catch (error) {
             console.error('自動創建貼文時發生錯誤:', error);
         }
+    }, {
+        timezone: "Asia/Taipei"  // 設定時區為台北
+    });
+
+    // 顯示當前時間和日期
+    cron.schedule('40 0 * * *', () => {
+        const now = new Date();
+        const formattedTime = now.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const formattedDate = now.toLocaleDateString('zh-TW');
+        console.log(`目前時間: ${formattedTime}，日期: ${formattedDate}`);
     }, {
         timezone: "Asia/Taipei"  // 設定時區為台北
     });
